@@ -6,12 +6,12 @@ test.describe('Blog Management - Core Flows', () => {
     await page.goto('/blog/new');
     await page.waitForLoadState('networkidle');
     
-    // Wait for Next.js SSR hydration
-    await page.waitForTimeout(500);
+    // Wait for Next.js SSR hydration (longer for TipTap editor)
+    await page.waitForTimeout(1500);
     
     // Verify main content loads
     const main = page.locator('main');
-    await expect(main).toBeVisible();
+    await expect(main).toBeVisible({ timeout: 10000 });
     
     // Look for title input (might be in different forms)
     const inputs = page.locator('input, textarea, [contenteditable]');

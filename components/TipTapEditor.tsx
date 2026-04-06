@@ -76,6 +76,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       }),
     ],
     content,
+    immediatelyRender: false, // Fix SSR hydration mismatch
     editorProps: {
       attributes: {
         class:
