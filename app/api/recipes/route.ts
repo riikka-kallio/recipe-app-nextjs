@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -25,7 +25,7 @@ import {
  * - limit: Items per page (default: 20, max: 100)
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const searchParams = request.nextUrl.searchParams;
   const userId = getUserIdFromRequest(request);
 
@@ -52,7 +52,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         full_name,
         avatar_url
       ),
-      recipe_tags!inner (
+      recipe_tags (
         tag:tags (
           id,
           name
@@ -132,7 +132,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * - tags: string[] (tag IDs)
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const userId = getUserIdFromRequest(request);
 
   // Parse request body
@@ -167,7 +167,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     return createErrorResponse('At least one instruction is required', 400);
   }
 
-  // Prepare recipe data
+  // Prepare recipe data (ingredients and instructions will be inserted separately)
   const recipeData = {
     user_id: userId,
     title: body.title,
@@ -176,8 +176,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     prep_time: parseInt(body.prep_time),
     cook_time: parseInt(body.cook_time),
     servings: parseInt(body.servings),
-    ingredients: body.ingredients,
-    instructions: body.instructions,
     image_url: body.image_url || null,
   };
 
@@ -203,6 +201,45 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     return createErrorResponse('Failed to create recipe', 500);
   }
 
+  // Insert ingredients into ingredients table
+  if (body.ingredients && body.ingredients.length > 0) {
+    const ingredientInserts = body.ingredients.map((ing: any, index: number) => ({
+      recipe_id: recipe.id,
+      item: ing.item,
+      quantity: ing.quantity || null,
+      unit: ing.unit || null,
+      order_index: index,
+      is_garnish: ing.is_garnish || false,
+    }));
+
+    const { error: ingredientsError } = await supabase
+      .from('ingredients')
+      .insert(ingredientInserts);
+
+    if (ingredientsError) {
+      console.error('Error inserting ingredients:', ingredientsError);
+      // Continue - recipe was created successfully, ingredients can be added later
+    }
+  }
+
+  // Insert instructions into instructions table
+  if (body.instructions && body.instructions.length > 0) {
+    const instructionInserts = body.instructions.map((inst: any, index: number) => ({
+      recipe_id: recipe.id,
+      step_number: index + 1,
+      instruction: inst.instruction,
+    }));
+
+    const { error: instructionsError } = await supabase
+      .from('instructions')
+      .insert(instructionInserts);
+
+    if (instructionsError) {
+      console.error('Error inserting instructions:', instructionsError);
+      // Continue - recipe was created successfully, instructions can be added later
+    }
+  }
+
   // Add tags if provided
   if (body.tags && Array.isArray(body.tags) && body.tags.length > 0) {
     const tagInserts = body.tags.map((tagId: string) => ({
@@ -210,8 +247,37 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       tag_id: tagId,
     }));
 
-    await supabase.from('recipe_tags').insert(tagInserts);
+    const { error: tagsError } = await supabase.from('recipe_tags').insert(tagInserts);
+    
+    if (tagsError) {
+      console.error('Error inserting tags:', tagsError);
+      // Continue - recipe was created successfully, tags can be added later
+    }
   }
 
-  return createSuccessResponse(recipe, 'Recipe created successfully');
+  // Fetch the complete recipe with all relationships
+  const { data: completeRecipe } = await supabase
+    .from('recipes')
+    .select(`
+      *,
+      user:users (
+        id,
+        username,
+        full_name,
+        avatar_url
+      ),
+      ingredients (*),
+      instructions (*),
+      recipe_tags (
+        tag:tags (
+          id,
+          name,
+          category
+        )
+      )
+    `)
+    .eq('id', recipe.id)
+    .single();
+
+  return createSuccessResponse(completeRecipe || recipe, 'Recipe created successfully');
 });
