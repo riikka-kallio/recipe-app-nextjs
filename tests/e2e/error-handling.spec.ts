@@ -59,7 +59,7 @@ test.describe('Error Handling', () => {
       await page.locator('h1, h2').filter({ hasText: /error/i }).count() > 0;
     
     // Navigation should still work
-    const nav = page.locator('nav');
+    const nav = page.locator('[data-testid="main-navigation"]');
     await expect(nav).toBeVisible();
   });
 
@@ -73,7 +73,7 @@ test.describe('Error Handling', () => {
     await expect(main).toBeVisible();
     
     // Navigation should still work
-    const nav = page.locator('nav');
+    const nav = page.locator('[data-testid="main-navigation"]');
     await expect(nav).toBeVisible();
   });
 

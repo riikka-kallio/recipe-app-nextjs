@@ -28,16 +28,22 @@ test.describe('Recipe Management - Core Flows', () => {
   test('recipe form has validation', async ({ page }) => {
     await page.goto('/recipes/new');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
     
     // Try to submit empty form
     await page.locator('button[type="submit"]').click();
+    await page.waitForTimeout(1000);
     
     // Should stay on form page (validation prevents navigation)
     await expect(page).toHaveURL('/recipes/new');
     
-    // Should show validation errors
-    const errorMessages = page.locator('text=/required/i');
+    // Should show validation errors (looking for actual zod error messages)
+    const errorMessages = page.locator('[role="alert"]');
     await expect(errorMessages.first()).toBeVisible({ timeout: 5000 });
+    
+    // Check for specific validation message
+    const titleError = page.locator('text=/title must be at least/i');
+    await expect(titleError).toBeVisible();
   });
 
   test('recipes page loads and displays recipes', async ({ page }) => {
