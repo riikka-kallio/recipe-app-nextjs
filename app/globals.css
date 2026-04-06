@@ -1,31 +1,59 @@
 @import "tailwindcss";
 
+/* Custom color palette - Recipe Sharing App */
+@theme {
+  /* Forest Green Palette */
+  --color-forest-50: #f4f7f1;
+  --color-forest-100: #e6ede0;
+  --color-forest-200: #ccdbc1;
+  --color-forest-300: #a8c296;
+  --color-forest-400: #7fa76a;
+  --color-forest-500: #4D7F29;
+  --color-forest-600: #3D6B1F;
+  --color-forest-700: #2D5016;
+  --color-forest-800: #213d10;
+  --color-forest-900: #1a2f0d;
+  --color-forest-green: #4D7F29; /* Alias for forest-500 (Main) */
+  
+  /* Peach Palette */
+  --color-peach-50: #fff5f2;
+  --color-peach-100: #ffe9e3;
+  --color-peach-200: #ffcfc3;
+  --color-peach-300: #FFB5A0;
+  --color-peach-400: #FF9B7F;
+  --color-peach-500: #E88568;
+  --color-peach-600: #d46b4e;
+  --color-peach-700: #b45539;
+  --color-peach-800: #934530;
+  --color-peach-900: #783a2a;
+  
+  /* Neutral Palette */
+  --color-neutral-background: #F9F9F7;
+  --color-neutral-light: #E8E6E0;
+  --color-neutral-text: #4A4A4A;
+  --color-neutral-heading: #2A2A2A;
+  
+  /* Animations */
+  --animate-heart-pop: heart-pop 0.3s ease-in-out;
+}
+
+@keyframes heart-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Base styles - light mode only */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #2A2A2A;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Screen reader only - hides content visually but keeps it accessible to screen readers */
+/* Screen reader utilities */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -38,7 +66,6 @@ body {
   border-width: 0;
 }
 
-/* Remove sr-only styling when element receives focus (for skip links) */
 .focus\:not-sr-only:focus {
   position: static;
   width: auto;
