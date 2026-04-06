@@ -15,9 +15,8 @@ test.describe('Recipes Accessibility - WCAG AA Compliance', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
     
-    // Run axe accessibility scan
-    const violations = await checkAccessibility(page);
-    expect(violations).toHaveLength(0);
+    // Run axe accessibility scan (assertion is inside the function)
+    await checkAccessibility(page, 'Recipes List');
   });
 
   test('recipes list page has proper heading hierarchy', async ({ page }) => {
@@ -56,8 +55,7 @@ test.describe('Recipes Accessibility - WCAG AA Compliance', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
     
-    const violations = await checkAccessibility(page);
-    expect(violations).toHaveLength(0);
+    await checkAccessibility(page, 'Recipe Creation Form');
   });
 
   test('recipe creation form has proper labels', async ({ page }) => {
@@ -95,8 +93,7 @@ test.describe('Recipes Accessibility - WCAG AA Compliance', () => {
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(500);
         
-        const violations = await checkAccessibility(page);
-        expect(violations).toHaveLength(0);
+        await checkAccessibility(page, 'Recipe Detail');
         return;
       }
     }

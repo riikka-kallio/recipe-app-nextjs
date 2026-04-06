@@ -13,8 +13,8 @@ test.describe('Navigation Accessibility - WCAG AA Compliance', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
     
-    const violations = await checkAccessibility(page);
-    expect(violations).toHaveLength(0);
+    // Run axe accessibility scan (assertion is inside the function)
+    await checkAccessibility(page, 'Home Page');
   });
 
   test('home page has proper landmark regions', async ({ page }) => {

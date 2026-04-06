@@ -11,11 +11,10 @@ test.describe('Blog Accessibility - WCAG AA Compliance', () => {
   
   test('blog list page has no accessibility violations', async ({ page }) => {
     await page.goto('/blog');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(500);
-    
-    const violations = await checkAccessibility(page);
-    expect(violations).toHaveLength(0);
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(500);
+        
+        await checkAccessibility(page, 'Blog Detail');
   });
 
   test('blog list page has proper heading hierarchy', async ({ page }) => {
@@ -45,8 +44,7 @@ test.describe('Blog Accessibility - WCAG AA Compliance', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
     
-    const violations = await checkAccessibility(page);
-    expect(violations).toHaveLength(0);
+    await checkAccessibility(page, 'Blog Creation Form');
   });
 
   test('blog creation form has proper labels', async ({ page }) => {
@@ -81,11 +79,10 @@ test.describe('Blog Accessibility - WCAG AA Compliance', () => {
       const href = await postLinks.nth(i).getAttribute('href');
       if (href && /\/blog\/\d+$/.test(href)) {
         await postLinks.nth(i).click();
-        await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(500);
-        
-        const violations = await checkAccessibility(page);
-        expect(violations).toHaveLength(0);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+    
+    await checkAccessibility(page, 'Blog List');
         return;
       }
     }
