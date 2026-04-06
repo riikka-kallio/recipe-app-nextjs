@@ -17,7 +17,7 @@ export const GET = withErrorHandling(
     const categoryId = params.id;
 
     const { data: category, error } = await supabase
-      .from('categories')
+      .from('blog_categories')
       .select('*')
       .eq('id', categoryId)
       .single();

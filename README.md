@@ -185,15 +185,15 @@ This project is a migration from a Vite + React + Express + PostgreSQL stack to 
 - ✅ Phase 1: Foundation & Setup (Supabase, database, RLS, UUID migration, base UI)
 - ✅ Phase 2: Components & Hooks (services, React Query, TipTap editor, feature components)
 - ✅ Phase 2 Cleanup: Accessibility improvements & GitHub deployment
+- ✅ Phase 3: API Routes (15 Next.js routes, Supabase queries, file uploads)
 
 **Upcoming Phases:**
-- 📋 Phase 3: API Routes (Express → Next.js API routes)
 - 📋 Phase 4: Frontend Pages (React Router → App Router)
 - 📋 Phase 5: Testing (Playwright test migration)
 - 📋 Phase 6: Deployment (Vercel)
 - 📋 Phase 7: Authentication (Supabase Auth integration)
 
-See [`docs/PHASE_1_COMPLETE.md`](docs/PHASE_1_COMPLETE.md) and [`docs/PHASE_2_COMPLETE.md`](docs/PHASE_2_COMPLETE.md) for detailed migration notes.
+See [`docs/PHASE_1_COMPLETE.md`](docs/PHASE_1_COMPLETE.md), [`docs/PHASE_2_COMPLETE.md`](docs/PHASE_2_COMPLETE.md), and [`docs/PHASE_3_COMPLETE.md`](docs/PHASE_3_COMPLETE.md) for detailed migration notes.
 
 ## Documentation
 

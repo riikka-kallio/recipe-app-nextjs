@@ -76,16 +76,17 @@ export function calculatePagination(page: number, limit: number, total: number) 
 
 /**
  * Mock user ID for MVP (Phase 3)
+ * NOTE: Database uses INTEGER IDs (not UUIDs) - using ID 1 which matches the guest_user from seed data
  * TODO: Replace with real authentication in Phase 7
  */
-export const MOCK_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+export const MOCK_USER_ID = 1;
 
 /**
  * Get mock user ID from request
  * TODO: Replace with real auth token parsing in Phase 7
  */
-export function getUserIdFromRequest(request: NextRequest): string {
-  // For now, return the mock UUID
+export function getUserIdFromRequest(request: NextRequest): number {
+  // For now, return the mock INTEGER ID (matches database schema)
   // In Phase 7, this will extract the user ID from the auth token
   return MOCK_USER_ID;
 }

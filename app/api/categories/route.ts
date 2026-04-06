@@ -14,7 +14,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const supabase = await createClient();
 
   const { data: categories, error } = await supabase
-    .from('categories')
+    .from('blog_categories')
     .select('*')
     .order('name', { ascending: true });
 

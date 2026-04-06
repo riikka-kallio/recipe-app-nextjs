@@ -33,14 +33,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     .select(
       `
       *,
-      user:users!blog_posts_user_id_fkey (
+      user:users (
         id,
         username,
         full_name,
         avatar_url
       ),
       categories:blog_post_categories (
-        category:categories!blog_post_categories_category_id_fkey (
+        category:blog_categories (
           id,
           name,
           slug

@@ -31,7 +31,7 @@ export const POST = withErrorHandling(
 
     // Check if user already liked the recipe
     const { data: existingLike } = await supabase
-      .from('recipe_likes')
+      .from('likes')
       .select('*')
       .eq('recipe_id', recipeId)
       .eq('user_id', userId)
@@ -42,7 +42,7 @@ export const POST = withErrorHandling(
     if (existingLike) {
       // Unlike - remove the like
       const { error } = await supabase
-        .from('recipe_likes')
+        .from('likes')
         .delete()
         .eq('recipe_id', recipeId)
         .eq('user_id', userId);
@@ -55,7 +55,7 @@ export const POST = withErrorHandling(
       isLiked = false;
     } else {
       // Like - add the like
-      const { error } = await supabase.from('recipe_likes').insert({
+      const { error } = await supabase.from('likes').insert({
         recipe_id: recipeId,
         user_id: userId,
       });

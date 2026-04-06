@@ -35,19 +35,19 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     .select(
       `
       *,
-      user:users!recipes_user_id_fkey (
+      user:users (
         id,
         username,
         full_name,
         avatar_url
       ),
       recipe_tags (
-        tag:tags!recipe_tags_tag_id_fkey (
+        tag:tags (
           id,
           name
         )
       ),
-      likes:recipe_likes!left (
+      likes (
         user_id,
         created_at
       )

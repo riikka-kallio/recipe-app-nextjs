@@ -23,20 +23,20 @@ export const GET = withErrorHandling(
       .select(
         `
         *,
-        user:users!blog_posts_user_id_fkey (
+        user:users (
           id,
           username,
           full_name,
           avatar_url
         ),
         categories:blog_post_categories (
-          category:categories!blog_post_categories_category_id_fkey (
+          category:blog_categories (
             id,
             name,
             slug
           )
         ),
-        likes:blog_post_likes!left (
+        likes:blog_post_likes (
           user_id
         )
       `
@@ -111,14 +111,14 @@ export const PUT = withErrorHandling(
       .select(
         `
         *,
-        user:users!blog_posts_user_id_fkey (
+        user:users (
           id,
           username,
           full_name,
           avatar_url
         ),
         categories:blog_post_categories (
-          category:categories!blog_post_categories_category_id_fkey (
+          category:blog_categories (
             id,
             name,
             slug
