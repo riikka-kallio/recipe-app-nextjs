@@ -212,7 +212,7 @@ export function RecipeForm({ recipeId }: RecipeFormProps) {
         {isEditMode ? 'Edit Recipe' : 'Create New Recipe'}
       </h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form data-testid="recipe-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-neutral-heading mb-2">

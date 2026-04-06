@@ -31,6 +31,7 @@ export const LoadingPlaceholder: React.FC<LoadingPlaceholderProps> = ({
 
   return (
     <div
+      data-testid="loading-placeholder"
       role="status"
       aria-live="polite"
       aria-label="Loading content"
@@ -53,7 +54,7 @@ export const LoadingPlaceholder: React.FC<LoadingPlaceholderProps> = ({
  */
 export const RecipeCardLoader: React.FC = () => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-light overflow-hidden">
+    <div data-testid="recipe-card-loader" className="bg-white rounded-xl shadow-sm border border-neutral-light overflow-hidden">
       <LoadingPlaceholder className="w-full aspect-square" />
       <div className="p-4 space-y-3">
         <LoadingPlaceholder className="h-6 w-3/4" />
@@ -75,7 +76,7 @@ export const RecipeCardLoader: React.FC = () => {
  */
 export const BlogPostCardLoader: React.FC = () => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-light overflow-hidden">
+    <div data-testid="blog-card-loader" className="bg-white rounded-xl shadow-sm border border-neutral-light overflow-hidden">
       <LoadingPlaceholder className="w-full aspect-video" />
       <div className="p-4 space-y-3">
         <LoadingPlaceholder className="h-6 w-3/4" />

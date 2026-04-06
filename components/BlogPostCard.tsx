@@ -51,7 +51,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ blogPost }) => {
   };
 
   return (
-    <Link href={`/blog/${blogPost.id}`}>
+    <Link href={`/blog/${blogPost.id}`} data-testid={`blog-card-${blogPost.id}`}>
       <Card hover className="group h-full flex flex-col">
         {/* Image */}
         <div className="relative aspect-video overflow-hidden bg-neutral-light rounded-t-lg">
@@ -67,6 +67,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ blogPost }) => {
           {/* Like button */}
           <button
             onClick={handleLike}
+            data-testid={`blog-like-button-${blogPost.id}`}
             aria-label={blogPost.is_liked ? `Unlike ${blogPost.title}` : `Like ${blogPost.title}`}
             aria-pressed={blogPost.is_liked}
             className={cn(

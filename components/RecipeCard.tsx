@@ -34,7 +34,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
   };
 
   return (
-    <Link href={`/recipes/${recipe.id}`}>
+    <Link href={`/recipes/${recipe.id}`} data-testid={`recipe-card-${recipe.id}`}>
       <Card hover className="group">
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-neutral-light">
@@ -50,6 +50,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
           {/* Like button */}
           <button
             onClick={handleLike}
+            data-testid={`recipe-like-button-${recipe.id}`}
             aria-label={recipe.is_liked ? `Unlike ${recipe.title}` : `Like ${recipe.title}`}
             aria-pressed={recipe.is_liked}
             className={cn(

@@ -172,7 +172,7 @@ export function BlogPostForm({ blogPostId }: BlogPostFormProps) {
         </h1>
       </div>
 
-      <form className="space-y-8">
+      <form data-testid="blog-post-form" className="space-y-8">
         {/* Title */}
         <div>
           <label
