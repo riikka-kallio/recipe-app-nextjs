@@ -27,8 +27,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         ...options,
+        // Don't set default Content-Type here - let individual methods handle it
         headers: {
-          'Content-Type': 'application/json',
           ...options.headers,
         },
       });
@@ -66,10 +66,13 @@ class ApiClient {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: isFormData ? data : JSON.stringify(data),
-      headers: isFormData
-        ? {} // Let browser set Content-Type for FormData
-        : { 'Content-Type': 'application/json' },
       ...options,
+      headers: {
+        // Let browser set Content-Type with boundary for FormData
+        // For JSON, explicitly set Content-Type
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+        ...options?.headers,
+      },
     });
   }
 
@@ -77,6 +80,9 @@ class ApiClient {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
   }
 

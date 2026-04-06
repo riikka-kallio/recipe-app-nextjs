@@ -129,7 +129,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * - ingredients: string[] (required)
  * - instructions: string[] (required)
  * - image_url: string
- * - dietary_restrictions: string[]
  * - tags: string[] (tag IDs)
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -180,7 +179,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     ingredients: body.ingredients,
     instructions: body.instructions,
     image_url: body.image_url || null,
-    dietary_restrictions: body.dietary_restrictions || [],
   };
 
   // Create recipe

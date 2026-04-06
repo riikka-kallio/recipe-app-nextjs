@@ -54,7 +54,7 @@ export const uploadService = {
   uploadImage: async (file: File) => {
     const formData = new FormData();
     formData.append('image', file);
-    return api.post<{ url: string; filename: string }>('/upload', formData);
+    return api.post<{ url: string; filename: string }>('/upload/image', formData);
   },
 };
 

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -10,9 +10,10 @@ import {
 /**
  * POST /api/upload/image
  * Upload an image to Supabase Storage
+ * Uses admin client to bypass RLS (for MVP with mock auth)
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const userId = getUserIdFromRequest(request);
 
   // Parse form data
