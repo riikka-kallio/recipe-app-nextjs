@@ -62,9 +62,9 @@ export default function HomePage() {
             <RecipeCardLoader key={i} />
           ))}
         </div>
-      ) : data?.data?.data && Array.isArray(data.data.data) && data.data.data.length > 0 ? (
+      ) : data?.data && Array.isArray(data.data) && data.data.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {data.data.data.map((recipe) => (
+          {data.data.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -7,13 +7,16 @@ import {
   withErrorHandling,
 } from '@/lib/apiHelpers';
 
+// TODO: Phase 7 - Replace createAdminClient with proper auth context
+// This route currently uses admin client to bypass RLS during MVP phase (Phases 2-6)
+
 /**
  * POST /api/blog/[id]/like
  * Toggle like on a blog post
  */
 export const POST = withErrorHandling(
   async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const userId = getUserIdFromRequest(request);
     const params = await context.params;
     const postId = params.id;

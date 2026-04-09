@@ -37,8 +37,8 @@ export function BlogPostForm({ blogPostId }: BlogPostFormProps) {
   const { data: recipesData } = useRecipes({});
 
   const categories = categoriesData?.data || [];
-  const recipes = Array.isArray(recipesData?.data?.data)
-    ? recipesData.data.data
+  const recipes = Array.isArray(recipesData?.data)
+    ? recipesData.data
     : [];
 
   // Mutations

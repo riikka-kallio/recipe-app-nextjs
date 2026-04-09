@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -8,6 +8,9 @@ import {
   getUserIdFromRequest,
   withErrorHandling,
 } from '@/lib/apiHelpers';
+
+// TODO: Phase 7 - Replace createAdminClient with proper auth context
+// This route currently uses admin client to bypass RLS during MVP phase (Phases 2-6)
 
 /**
  * GET /api/recipes/trending
@@ -18,7 +21,7 @@ import {
  * - limit: Items per page (default: 20, max: 100)
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const searchParams = request.nextUrl.searchParams;
   const userId = getUserIdFromRequest(request);
 

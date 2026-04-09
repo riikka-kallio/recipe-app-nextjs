@@ -134,8 +134,13 @@ export function RecipeForm({ recipeId }: RecipeFormProps) {
       }
 
       if (recipe.image_url) {
-        // Images are served at /api/uploads, stored as /uploads in DB
-        setImagePreview(`${BASE_URL}/api${recipe.image_url}`);
+        // Check if image_url is already a full URL (Supabase storage) or relative path
+        if (recipe.image_url.startsWith('http')) {
+          setImagePreview(recipe.image_url);
+        } else {
+          // Legacy format: relative path stored in DB
+          setImagePreview(`${BASE_URL}/api${recipe.image_url}`);
+        }
       }
     }
   }, [isEditMode, recipeData, setValue, recipeId]);

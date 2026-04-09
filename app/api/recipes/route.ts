@@ -67,7 +67,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   // Apply filters
   if (searchQuery) {
-    query = query.or(`title.ilike.%${searchQuery}%,ingredients.cs.{${searchQuery}}`);
+    // Search in title only (ingredients are now in separate table)
+    query = query.ilike('title', `%${searchQuery}%`);
   }
 
   if (difficulty) {
@@ -241,8 +242,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   // Add tags if provided
-  if (body.tags && Array.isArray(body.tags) && body.tags.length > 0) {
-    const tagInserts = body.tags.map((tagId: string) => ({
+  if (body.tag_ids && Array.isArray(body.tag_ids) && body.tag_ids.length > 0) {
+    const tagInserts = body.tag_ids.map((tagId: number) => ({
       recipe_id: recipe.id,
       tag_id: tagId,
     }));

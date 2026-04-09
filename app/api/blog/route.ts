@@ -1,5 +1,5 @@
-import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -10,12 +10,15 @@ import {
   withErrorHandling,
 } from '@/lib/apiHelpers';
 
+// TODO: Phase 7 - Replace createAdminClient with proper auth context
+// This route currently uses admin client to bypass RLS during MVP phase (Phases 2-6)
+
 /**
  * GET /api/blog
  * Get all blog posts with optional filters and pagination
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const searchParams = request.nextUrl.searchParams;
   const userId = getUserIdFromRequest(request);
 
@@ -27,26 +30,38 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const category = searchParams.get('category');
   const filterUserId = searchParams.get('user_id');
 
-  // Build the Supabase query
+  // Build the Supabase query with explicit FK constraints
   let query = supabase
     .from('blog_posts')
     .select(
       `
       *,
-      user:users (
+      user:users!blog_posts_user_id_fkey (
         id,
         username,
         full_name,
         avatar_url
       ),
-      categories:blog_post_categories (
-        category:blog_categories (
+      categories:blog_post_categories!blog_post_categories_blog_post_id_fkey (
+        category:blog_categories!blog_post_categories_category_id_fkey (
           id,
           name,
           slug
         )
       ),
-      likes:blog_post_likes (
+      blog_post_recipes!blog_post_recipes_blog_post_id_fkey (
+        recipes!blog_post_recipes_recipe_id_fkey (
+          id,
+          title,
+          description,
+          image_url,
+          prep_time,
+          cook_time,
+          servings,
+          difficulty
+        )
+      ),
+      blog_post_likes (
         user_id
       )
     `,
@@ -82,8 +97,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const transformedPosts = blogPosts?.map((post) => ({
     ...post,
     categories: post.categories?.map((c: any) => c.category) || [],
-    is_liked: post.likes?.some((like: any) => like.user_id === userId) || false,
-    likes_count: post.likes?.length || 0,
+    recipes: post.blog_post_recipes?.map((bpr: any) => bpr.recipes) || [],
+    is_liked: post.blog_post_likes?.some((like: any) => like.user_id === userId) || false,
+    likes_count: post.blog_post_likes?.length || 0,
   }));
 
   // Calculate pagination metadata
@@ -97,7 +113,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Create a new blog post
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const userId = getUserIdFromRequest(request);
 
   // Parse request body
@@ -143,13 +159,37 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   // Add categories if provided
-  if (body.categories && Array.isArray(body.categories) && body.categories.length > 0) {
-    const categoryInserts = body.categories.map((categoryId: string) => ({
+  if (body.category_ids && Array.isArray(body.category_ids) && body.category_ids.length > 0) {
+    const categoryInserts = body.category_ids.map((categoryId: number) => ({
       blog_post_id: post.id,
       category_id: categoryId,
     }));
 
-    await supabase.from('blog_post_categories').insert(categoryInserts);
+    const { error: categoryError } = await supabase
+      .from('blog_post_categories')
+      .insert(categoryInserts);
+    
+    if (categoryError) {
+      // Best effort: log but don't fail the entire operation
+      console.error('Error linking categories to blog post:', categoryError);
+    }
+  }
+
+  // Add recipes if provided
+  if (body.recipe_ids && Array.isArray(body.recipe_ids) && body.recipe_ids.length > 0) {
+    const recipeInserts = body.recipe_ids.map((recipeId: number) => ({
+      blog_post_id: post.id,
+      recipe_id: recipeId,
+    }));
+
+    const { error: recipeError } = await supabase
+      .from('blog_post_recipes')
+      .insert(recipeInserts);
+    
+    if (recipeError) {
+      // Best effort: log but don't fail the entire operation
+      console.error('Error linking recipes to blog post:', recipeError);
+    }
   }
 
   return createSuccessResponse(post, 'Blog post created successfully');

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -14,7 +14,7 @@ import {
  */
 export const GET = withErrorHandling(
   async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const userId = getUserIdFromRequest(request);
     const params = await context.params;
     const recipeId = params.id;
@@ -30,6 +30,8 @@ export const GET = withErrorHandling(
           full_name,
           avatar_url
         ),
+        ingredients (*),
+        instructions (*),
         recipe_tags (
           tag:tags (
             id,
@@ -66,7 +68,7 @@ export const GET = withErrorHandling(
  */
 export const PUT = withErrorHandling(
   async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const userId = getUserIdFromRequest(request);
     const params = await context.params;
     const recipeId = params.id;
@@ -155,7 +157,7 @@ export const PUT = withErrorHandling(
  */
 export const DELETE = withErrorHandling(
   async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const userId = getUserIdFromRequest(request);
     const params = await context.params;
     const recipeId = params.id;

@@ -162,13 +162,13 @@ function RecipesPageContent() {
             <RecipeCardLoader key={i} />
           ))}
         </div>
-      ) : data?.data?.data && data.data.data.length > 0 ? (
+      ) : data?.data && data.data.length > 0 ? (
         <>
           <p className="text-neutral-text mb-4">
-            Found {data.data.pagination?.total || 0} recipe{data.data.pagination?.total !== 1 ? 's' : ''}
+            Found {data.pagination?.total || 0} recipe{data.pagination?.total !== 1 ? 's' : ''}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {data.data.data.map((recipe) => (
+            {data.data.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </div>

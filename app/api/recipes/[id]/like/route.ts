@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -13,7 +13,7 @@ import {
  */
 export const POST = withErrorHandling(
   async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const userId = getUserIdFromRequest(request);
     const params = await context.params;
     const recipeId = params.id;

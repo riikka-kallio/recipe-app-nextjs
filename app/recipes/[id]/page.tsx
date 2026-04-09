@@ -61,9 +61,11 @@ export default function RecipeDetailPage() {
 
   const recipe = data.data;
   const totalTime = recipe.prep_time + recipe.cook_time;
-  // Images are served at /api/uploads, stored as /uploads in DB
+  // Check if image_url is already a full URL (Supabase storage) or relative path
   const imageUrl = recipe.image_url
-    ? `${BASE_URL}/api${recipe.image_url}`
+    ? (recipe.image_url.startsWith('http') 
+        ? recipe.image_url 
+        : `${BASE_URL}/api${recipe.image_url}`)
     : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200';
 
   const difficultyColors = {

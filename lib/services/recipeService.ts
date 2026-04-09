@@ -5,20 +5,30 @@ import type {
   UpdateRecipeRequest,
   RecipeFilters,
   PaginationParams,
-  PaginatedResponse,
   Tag,
   User,
 } from '@/lib/types';
+
+// API response for paginated recipes (matches actual API structure)
+interface PaginatedRecipeResponse {
+  data: Recipe[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
 
 // Recipes
 export const recipeService = {
   getAll: async (filters?: RecipeFilters, pagination?: PaginationParams) => {
     const params = { ...filters, ...pagination };
-    return api.get<PaginatedResponse<Recipe>>('/recipes', params);
+    return api.get<Recipe[]>('/recipes', params);
   },
 
   getTrending: async (pagination?: PaginationParams) => {
-    return api.get<PaginatedResponse<Recipe>>('/recipes/trending', pagination);
+    return api.get<Recipe[]>('/recipes/trending', pagination);
   },
 
   getById: async (id: number) => {
@@ -65,6 +75,6 @@ export const userService = {
   },
 
   getUserRecipes: async (userId: string, pagination?: PaginationParams) => {
-    return api.get<PaginatedResponse<Recipe>>(`/users/${userId}/recipes`, pagination);
+    return api.get<Recipe[]>(`/users/${userId}/recipes`, pagination);
   },
 };

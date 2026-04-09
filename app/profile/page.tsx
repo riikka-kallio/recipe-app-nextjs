@@ -18,8 +18,8 @@ export default function ProfilePage() {
   }
 
   const user = userData?.data;
-  const recipes = recipesData?.data?.data || [];
-  const totalRecipes = recipesData?.data?.pagination?.total || 0;
+  const recipes = recipesData?.data || [];
+  const totalRecipes = recipesData?.pagination?.total || 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

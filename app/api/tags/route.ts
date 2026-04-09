@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -13,7 +13,7 @@ import {
  * - category: Filter by category slug
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get('category');
 
@@ -30,5 +30,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     return createErrorResponse('Failed to fetch tags', 500);
   }
 
-  return createSuccessResponse(tags);
+  // Group tags by category for easier frontend consumption
+  const grouped = tags?.reduce((acc: Record<string, any[]>, tag: any) => {
+    if (!acc[tag.category]) {
+      acc[tag.category] = [];
+    }
+    acc[tag.category].push(tag);
+    return acc;
+  }, {}) || {};
+
+  return createSuccessResponse({
+    all: tags || [],
+    grouped: grouped,
+  });
 });
