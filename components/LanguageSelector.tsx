@@ -121,7 +121,9 @@ export function LanguageSelector({
                 </h2>
                 {remainingTranslations !== null && remainingTranslations !== undefined && (
                   <p className="text-sm text-neutral-text mt-1">
-                    {remainingTranslations} translations remaining this month
+                    {remainingTranslations === -1 
+                      ? 'Unlimited translations (sign in to track usage)'
+                      : `${remainingTranslations} translations remaining this month`}
                   </p>
                 )}
               </div>

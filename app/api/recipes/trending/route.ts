@@ -32,8 +32,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // Query trending recipes (most likes in the past 30 days)
-  const { data: recipes, error, count } = await supabase
+  // First, try to get trending recipes (recipes with likes in the past 30 days)
+  const { data: trendingRecipes, error: trendingError } = await supabase
     .from('recipes')
     .select(
       `
@@ -54,30 +54,48 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         user_id,
         created_at
       )
-    `,
-      { count: 'exact' }
+    `
     )
-    .gte('created_at', thirtyDaysAgo.toISOString())
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching trending recipes:', error);
+  if (trendingError) {
+    console.error('Error fetching trending recipes:', trendingError);
     return createErrorResponse('Failed to fetch trending recipes', 500);
   }
 
-  // Transform and sort by likes count
-  const transformedRecipes = recipes
-    ?.map((recipe) => ({
-      ...recipe,
-      tags: recipe.recipe_tags?.map((rt: any) => rt.tag) || [],
-      is_liked: recipe.likes?.some((like: any) => like.user_id === userId) || false,
-      likes_count: recipe.likes?.length || 0,
-    }))
-    .sort((a, b) => b.likes_count - a.likes_count);
+  // Transform recipes and calculate recent likes count
+  const transformedRecipes = trendingRecipes
+    ?.map((recipe) => {
+      const allLikes = recipe.likes || [];
+      const recentLikes = allLikes.filter(
+        (like: any) => new Date(like.created_at) >= thirtyDaysAgo
+      );
+      
+      return {
+        ...recipe,
+        tags: recipe.recipe_tags?.map((rt: any) => rt.tag) || [],
+        is_liked: allLikes.some((like: any) => like.user_id === userId) || false,
+        likes_count: allLikes.length || 0,
+        recent_likes_count: recentLikes.length,
+      };
+    }) || [];
+
+  // Sort by recent likes first (trending), then by all-time likes (popular)
+  const sortedRecipes = transformedRecipes.sort((a, b) => {
+    // Primary sort: recent likes (trending)
+    if (b.recent_likes_count !== a.recent_likes_count) {
+      return b.recent_likes_count - a.recent_likes_count;
+    }
+    // Secondary sort: all-time likes (popular)
+    return b.likes_count - a.likes_count;
+  });
+
+  // Apply pagination
+  const paginatedRecipes = sortedRecipes.slice(offset, offset + limit);
+  const total = sortedRecipes.length;
 
   // Calculate pagination metadata
-  const pagination = calculatePagination(page, limit, count || 0);
+  const pagination = calculatePagination(page, limit, total);
 
-  return createSuccessResponse(transformedRecipes, undefined, pagination);
+  return createSuccessResponse(paginatedRecipes, undefined, pagination);
 });

@@ -347,7 +347,51 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 9. INITIALIZE VIEW COUNTS (if needed)
+-- 9. ADD TEST LIKES TO RECIPES
+-- ============================================================================
+
+-- Add likes to test recipes to make them appear as trending
+DO $$
+DECLARE
+  pancake_id INTEGER;
+  pasta_id INTEGER;
+  salad_id INTEGER;
+BEGIN
+  -- Get recipe IDs
+  SELECT id INTO pancake_id FROM recipes WHERE title = 'Test Recipe: Fluffy Pancakes' LIMIT 1;
+  SELECT id INTO pasta_id FROM recipes WHERE title = 'Test Recipe: Classic Spaghetti Carbonara' LIMIT 1;
+  SELECT id INTO salad_id FROM recipes WHERE title = 'Test Recipe: Fresh Garden Salad' LIMIT 1;
+
+  -- Add likes to pancake recipe (make it trending with recent likes)
+  IF pancake_id IS NOT NULL THEN
+    INSERT INTO likes (user_id, recipe_id, created_at)
+    SELECT 1, pancake_id, NOW() - INTERVAL '2 days'
+    WHERE NOT EXISTS (
+      SELECT 1 FROM likes WHERE user_id = 1 AND recipe_id = pancake_id
+    );
+  END IF;
+
+  -- Add likes to pasta recipe (popular with older likes)
+  IF pasta_id IS NOT NULL THEN
+    INSERT INTO likes (user_id, recipe_id, created_at)
+    SELECT 1, pasta_id, NOW() - INTERVAL '5 days'
+    WHERE NOT EXISTS (
+      SELECT 1 FROM likes WHERE user_id = 1 AND recipe_id = pasta_id
+    );
+  END IF;
+
+  -- Add likes to salad recipe (most recent, should be #1 trending)
+  IF salad_id IS NOT NULL THEN
+    INSERT INTO likes (user_id, recipe_id, created_at)
+    SELECT 1, salad_id, NOW() - INTERVAL '1 day'
+    WHERE NOT EXISTS (
+      SELECT 1 FROM likes WHERE user_id = 1 AND recipe_id = salad_id
+    );
+  END IF;
+END $$;
+
+-- ============================================================================
+-- 10. INITIALIZE VIEW COUNTS (if needed)
 -- ============================================================================
 
 -- Update view counts to ensure they're not NULL
@@ -375,6 +419,10 @@ SELECT 'Ingredients', COUNT(*) FROM ingredients WHERE recipe_id IN (
 UNION ALL
 SELECT 'Instructions', COUNT(*) FROM instructions WHERE recipe_id IN (
   SELECT id FROM recipes WHERE title LIKE 'Test Recipe:%'
+)
+UNION ALL
+SELECT 'Likes', COUNT(*) FROM likes WHERE recipe_id IN (
+  SELECT id FROM recipes WHERE title LIKE 'Test Recipe:%'
 );
 
 -- Show created test data IDs
@@ -391,6 +439,7 @@ SELECT 'Test Blog IDs:', id, title FROM blog_posts WHERE title LIKE 'Test Blog:%
 -- - 6 tags (Breakfast, Lunch, Dinner, Dessert, Vegetarian, Vegan)
 -- - 3 categories (Cooking Tips, Food Culture, Kitchen Essentials)
 -- - 3 test recipes with ingredients and instructions
+-- - 3 likes on test recipes (for trending functionality)
 -- - 2 test blog posts with categories
 --
 -- This is the MINIMUM data required for Playwright tests to pass.
@@ -398,5 +447,6 @@ SELECT 'Test Blog IDs:', id, title FROM blog_posts WHERE title LIKE 'Test Blog:%
 -- - At least 1 recipe exists (for list/detail tests)
 -- - At least 1 blog post exists (for list/detail tests)
 -- - guest_user (ID=1) exists (for mock authentication)
+-- - Recipes have likes (for trending recipes display)
 --
 -- ============================================================================

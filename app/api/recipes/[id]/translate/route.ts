@@ -76,12 +76,9 @@ function setCachedTranslation(cacheKey: string, data: any): void {
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const supabase = await createClient();
   
-  // Check authentication
+  // Check authentication - make it optional
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return createErrorResponse('Unauthorized', 401);
-  }
-
+  
   // Get recipe ID from URL
   const url = new URL(request.url);
   const recipeId = parseInt(url.pathname.split('/')[3]);
@@ -107,13 +104,20 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     return createErrorResponse(`Unsupported source language: ${source_language}`, 400);
   }
 
-  // Check rate limit
-  const rateLimit = checkRateLimit(user.id);
-  if (!rateLimit.allowed) {
-    return createErrorResponse(
-      `Translation limit exceeded. You have ${rateLimit.remaining} translations remaining this month. Resets on ${rateLimit.resetDate.toLocaleDateString()}.`,
-      429
-    );
+  // Check rate limit only for authenticated users
+  let rateLimit = { allowed: true, remaining: 100, resetDate: new Date() };
+  if (user) {
+    rateLimit = checkRateLimit(user.id);
+    if (!rateLimit.allowed) {
+      return createErrorResponse(
+        `Translation limit exceeded. You have ${rateLimit.remaining} translations remaining this month. Resets on ${rateLimit.resetDate.toLocaleDateString()}.`,
+        429
+      );
+    }
+  } else {
+    // For non-authenticated users, use IP-based rate limiting or allow limited translations
+    // For now, we'll allow it but show a message
+    rateLimit.remaining = -1; // Indicate unlimited for guest users
   }
 
   // Check cache first
@@ -121,7 +125,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const cached = getCachedTranslation(cacheKey);
   if (cached) {
     return createSuccessResponse(
-      { ...cached, cached: true, remaining_translations: rateLimit.remaining - 1 },
+      { ...cached, cached: true, remaining_translations: user ? rateLimit.remaining - 1 : -1 },
       'Translation retrieved from cache'
     );
   }
@@ -161,7 +165,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     setCachedTranslation(cacheKey, translatedRecipe);
 
     return createSuccessResponse(
-      { ...translatedRecipe, cached: false, remaining_translations: rateLimit.remaining - 1 },
+      { ...translatedRecipe, cached: false, remaining_translations: user ? rateLimit.remaining - 1 : -1 },
       'Recipe translated successfully'
     );
   } catch (error: any) {
@@ -178,8 +182,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const supabase = await createClient();
   
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  // For non-authenticated users, return unlimited
   if (authError || !user) {
-    return createErrorResponse('Unauthorized', 401);
+    return createSuccessResponse({
+      limit: -1,
+      remaining: -1,
+      reset_date: new Date().toISOString(),
+      message: 'Sign in to track your translation usage',
+    });
   }
 
   const rateLimit = checkRateLimit(user.id);
