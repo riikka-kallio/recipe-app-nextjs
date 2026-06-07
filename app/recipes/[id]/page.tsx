@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRecipe, useLikeRecipe, useDeleteRecipe } from '@/lib/hooks/useRecipes';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ExportMenu } from '@/components/ExportMenu';
 import { Heart, Clock, Users, ChefHat, Edit, Trash2, ArrowLeft, CookingPot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -129,6 +130,8 @@ export default function RecipeDetailPage() {
             <Button variant="ghost" onClick={() => router.push(`/recipes/${id}/edit`)}>
               <Edit className="w-5 h-5" />
             </Button>
+
+            <ExportMenu recipeId={Number(id)} />
 
             <Button variant="danger" onClick={handleDelete}>
               <Trash2 className="w-5 h-5" />
