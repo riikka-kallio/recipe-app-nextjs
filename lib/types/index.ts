@@ -18,6 +18,7 @@ export interface Recipe {
   prep_time: number; // in minutes
   cook_time: number; // in minutes
   servings: number;
+  language: string; // ISO 639-1 language code (e.g., 'en', 'fi', 'es')
   likes_count: number;
   created_at: Date | string;
   updated_at: Date | string;
@@ -71,6 +72,7 @@ export interface CreateRecipeRequest {
   prep_time: number;
   cook_time: number;
   servings: number;
+  language?: string; // ISO 639-1 language code, defaults to 'en'
   ingredients: Array<{
     item: string;
     quantity?: string;

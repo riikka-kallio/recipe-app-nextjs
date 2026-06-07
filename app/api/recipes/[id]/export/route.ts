@@ -6,8 +6,9 @@ import type { ExportFormat } from '@/lib/types/import';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = createAdminClient();
   const searchParams = request.nextUrl.searchParams;
   const format = (searchParams.get('format') || 'json') as ExportFormat;
@@ -36,7 +37,7 @@ export async function GET(
         )
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !recipe) {

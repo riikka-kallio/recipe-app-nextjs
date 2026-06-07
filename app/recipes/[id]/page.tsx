@@ -1,24 +1,59 @@
 'use client';
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRecipe, useLikeRecipe, useDeleteRecipe } from '@/lib/hooks/useRecipes';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ExportMenu } from '@/components/ExportMenu';
-import { Heart, Clock, Users, ChefHat, Edit, Trash2, ArrowLeft, CookingPot } from 'lucide-react';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { Heart, Clock, Users, ChefHat, Edit, Trash2, ArrowLeft, CookingPot, Languages, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getLanguageName, getLanguageFlag } from '@/lib/types/translation';
+import toast from 'react-hot-toast';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params.id as string;
   const { data, isLoading, error } = useRecipe(Number(id));
   const likeMutation = useLikeRecipe();
   const deleteMutation = useDeleteRecipe();
+  
+  // Translation state
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const { 
+    translatedRecipe, 
+    isTranslating, 
+    error: translationError,
+    remainingTranslations,
+    translateRecipe,
+    clearTranslation,
+    isTranslated 
+  } = useTranslation();
+
+  // Check for language in URL query params
+  const langParam = searchParams.get('lang');
+  
+  useEffect(() => {
+    if (langParam && data?.data && !isTranslated && !isTranslating) {
+      const sourceLang = data.data.language || 'en';
+      if (langParam !== sourceLang) {
+        translateRecipe(Number(id), langParam, sourceLang);
+      }
+    }
+  }, [langParam, data, id, isTranslated, isTranslating]);
+
+  useEffect(() => {
+    if (translationError) {
+      toast.error(translationError);
+    }
+  }, [translationError]);
 
   const handleLike = () => {
     if (id) {
@@ -34,6 +69,23 @@ export default function RecipeDetailPage() {
         },
       });
     }
+  };
+
+  const handleSelectLanguage = async (targetLanguage: string) => {
+    const sourceLang = recipe.language || 'en';
+    if (targetLanguage === sourceLang) {
+      clearTranslation();
+      router.push(`/recipes/${id}`);
+      return;
+    }
+    
+    await translateRecipe(Number(id), targetLanguage, sourceLang);
+    router.push(`/recipes/${id}?lang=${targetLanguage}`);
+  };
+
+  const handleViewOriginal = () => {
+    clearTranslation();
+    router.push(`/recipes/${id}`);
   };
 
   if (isLoading) {
@@ -60,7 +112,12 @@ export default function RecipeDetailPage() {
     );
   }
 
-  const recipe = data.data;
+  // Use translated recipe if available, otherwise use original
+  const recipe = isTranslated && translatedRecipe ? { ...data.data, ...translatedRecipe } : data.data;
+  const originalLanguage = data.data.language || 'en';
+  const currentLanguage = isTranslated && translatedRecipe 
+    ? translatedRecipe.translation_metadata.target_language 
+    : originalLanguage;
   const totalTime = recipe.prep_time + recipe.cook_time;
   // Check if image_url is already a full URL (Supabase storage) or relative path
   const imageUrl = recipe.image_url
@@ -100,6 +157,22 @@ export default function RecipeDetailPage() {
 
       {/* Header */}
       <div className="mb-8">
+        {/* Translation Badge */}
+        {isTranslated && translatedRecipe && (
+          <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <Languages className="w-5 h-5 text-blue-600" />
+            <span className="text-sm text-blue-800">
+              Translated from {getLanguageFlag(originalLanguage)} {getLanguageName(originalLanguage)} to {getLanguageFlag(currentLanguage)} {getLanguageName(currentLanguage)}
+            </span>
+            <button
+              onClick={handleViewOriginal}
+              className="ml-auto text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              View Original
+            </button>
+          </div>
+        )}
+
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-neutral-heading mb-2">{recipe.title}</h1>
@@ -109,6 +182,20 @@ export default function RecipeDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Translate Button */}
+            <Button
+              variant="secondary"
+              onClick={() => setShowLanguageSelector(true)}
+              disabled={isTranslating}
+              className="flex items-center gap-2"
+              title="Translate recipe"
+            >
+              <Languages className="w-5 h-5" />
+              <span className="hidden sm:inline">
+                {isTranslating ? 'Translating...' : 'Translate'}
+              </span>
+            </Button>
+
             <Button
               variant="primary"
               onClick={() => router.push(`/recipes/${id}/cook`)}
@@ -244,6 +331,15 @@ export default function RecipeDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Language Selector Modal */}
+      <LanguageSelector
+        currentLanguage={currentLanguage}
+        onSelectLanguage={handleSelectLanguage}
+        onClose={() => setShowLanguageSelector(false)}
+        isOpen={showLanguageSelector}
+        remainingTranslations={remainingTranslations}
+      />
     </div>
   );
 }
